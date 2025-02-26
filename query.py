@@ -2,7 +2,7 @@ import requests
 from pathlib import Path
 import json
 import argparse
-
+from urllib.parse import urlparse
 
 
 def get_csrf(use_cache=True):
@@ -91,13 +91,25 @@ fragment FleetViewerDevice on Device {
 """
 
 	r = requests.post('https://us6-ws.cloud.samsara.com/r/graphql?q=FleetViewer', headers=headers, json={
-		"query":query,
-		"variables": {"token":samsara_token,"duration":30000},"extensions":{"route":"/o/:org_id/fleet/viewer/:token","orgId":org_id,"stashOutput":True,"storeDepSet":True}
+		"query": query,
+		"variables": {"token": samsara_token ,"duration":30000},"extensions":{"route":"/o/:org_id/fleet/viewer/:token","orgId":org_id,"stashOutput":True,"storeDepSet":True}
 	})
+	r.raise_for_status()
+	return r.json()
 
 parser = argparse.ArgumentParser()
 
+parser.add_argument("url", help="the samsara url to get information from")
 parser.add_argument('--nocache', action='store_true', help='disables the cache')
 
 args = parser.parse_args()
 
+
+url = urlparse(args.url)
+path = url.path.split("/")
+samsara_token = path[2]
+org_id = path[5]
+
+
+csrf, cookie = get_csrf(not args.nocache)
+print(get_locations_batch(csrf, cookie, samsara_token, org_id))
