@@ -1,6 +1,7 @@
 import requests
 from pathlib import Path
 import json
+import argparse
 
 
 
@@ -22,4 +23,10 @@ def get_csrf(use_cache=True):
 
 
 print(get_csrf())
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument('--nocache', action='store_true', help='disables the cache')
+
+args = parser.parse_args()
 
