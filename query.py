@@ -22,7 +22,78 @@ def get_csrf(use_cache=True):
 	return result.get("csrf_token"), cookie
 
 
-print(get_csrf())
+def get_locations_batch(csrf_token, cookie, samsara_token, org_id):
+
+	headers = {
+		'Accept': 'application/json; version=2',
+		'Content-Type': 'application/json',
+		'X-Csrf-Token': csrf_token,
+		'Origin': 'https://cloud.samsara.com',
+		'Cookie': cookie
+	}
+	query = """ 
+query FleetViewer($token: string!, $duration: int64!) {
+  fleetViewerToken(token: $token) {
+    ...FleetViewerInfo
+  }
+}
+fragment FleetViewerInfo on FleetViewerToken {
+  description
+  devices(feature: \"fleetTrackable\") {
+    ...FleetViewerDevice
+  }
+  destinationName
+  destinationAddress: address
+  destinationLatitude: latitude
+  destinationLongitude: longitude
+  group {
+    id
+  }
+  organization {
+    name
+    logoType
+    logoDomain
+    logoS3Location
+  }
+}
+fragment FleetViewerDevice on Device {
+  name
+  id
+  orgId
+  location: fleetViewerLocation(duration: $duration) {
+    time
+    latitude
+    longitude
+    heading
+    speed
+    formatted
+    locationSource
+  }
+  engineState: objectStat(statTypeEnum: osDEngineState, duration: $duration) {
+    time: changedAtMs
+    value: intValue
+  }
+  isAsset: hasFeature(featureKey: freight)
+  deviceCable {
+    powerStatusEvents(invalidateIfStale: true) {
+      isOn
+    }
+  }
+  currentDriver {
+    id
+    name
+  }
+  unpoweredDormantSince: objectStat(statTypeEnum: osDUnpoweredDormantSinceMs, duration: $duration) {
+    value: intValue
+  }
+  hasLocationAdvertisement: hasFeature(featureKey: location_advertisement)
+}
+"""
+
+	r = requests.post('https://us6-ws.cloud.samsara.com/r/graphql?q=FleetViewer', headers=headers, json={
+		"query":query,
+		"variables": {"token":samsara_token,"duration":30000},"extensions":{"route":"/o/:org_id/fleet/viewer/:token","orgId":org_id,"stashOutput":True,"storeDepSet":True}
+	})
 
 parser = argparse.ArgumentParser()
 
