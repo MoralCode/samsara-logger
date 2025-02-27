@@ -4,6 +4,7 @@ import json
 import argparse
 from urllib.parse import urlparse
 import csv
+import sys
 
 def get_csrf(use_cache=True):
 	tokencache = Path("token.json")
@@ -119,6 +120,12 @@ csrf, cookie = get_csrf(not args.nocache)
 
 
 location = get_locations_batch(csrf, cookie, samsara_token, org_id)
+
+error = location.get("errors")
+if error is not None:
+	print(f"Error: {error}")
+	sys.exit(0)
+
 location_json = location.get("data").get("fleetViewerToken")
 
 if location_json is not None:	
