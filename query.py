@@ -124,6 +124,8 @@ location_json = location.get("data").get("fleetViewerToken")
 if location_json is not None:	
 	location_json = location_json.get("devices")[0].get("location")
 
+
+if location_json is not None:
 	logfile_exists = logger_path.exists()
 	if not logfile_exists:
 		logger_path.touch()
