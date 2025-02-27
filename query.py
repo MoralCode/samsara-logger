@@ -97,7 +97,7 @@ fragment FleetViewerDevice on Device {
 	r.raise_for_status()
 	return r.json()
 
-logger_path = Path("log.csv")
+
 
 parser = argparse.ArgumentParser()
 
@@ -112,6 +112,8 @@ path = url.path.split("/")
 
 org_id = path[2]
 samsara_token = path[5]
+
+logger_path = Path(f"log_{org_id}_{samsara_token}.csv")
 
 csrf, cookie = get_csrf(not args.nocache)
 
