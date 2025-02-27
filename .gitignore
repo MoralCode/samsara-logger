@@ -172,3 +172,8 @@ cython_debug/
 
 # PyPI configuration file
 .pypirc
+
+# additional project specific ignores
+cookie.txt
+token.json
+*.csv
