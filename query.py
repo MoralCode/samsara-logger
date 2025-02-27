@@ -130,8 +130,7 @@ if location_json is not None:
 		writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 		if not logfile_exists:
 			writer.writeheader()
-		for l in location_json:
-			writer.writerow(l)
+		writer.writerows(location_json)
 
 	print(location_json)
 else:
