@@ -109,9 +109,9 @@ args = parser.parse_args()
 
 url = urlparse(args.url)
 path = url.path.split("/")
-samsara_token = path[2]
-org_id = path[5]
 
+org_id = path[2]
+samsara_token = path[5]
 
 csrf, cookie = get_csrf(not args.nocache)
 
