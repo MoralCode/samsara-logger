@@ -3,7 +3,7 @@ from pathlib import Path
 import json
 import argparse
 from urllib.parse import urlparse
-
+import csv
 
 def get_csrf(use_cache=True):
 	tokencache = Path("token.json")
@@ -97,6 +97,8 @@ fragment FleetViewerDevice on Device {
 	r.raise_for_status()
 	return r.json()
 
+logger_path = Path("log.csv")
+
 parser = argparse.ArgumentParser()
 
 parser.add_argument("url", help="the samsara url to get information from")
@@ -112,4 +114,25 @@ org_id = path[5]
 
 
 csrf, cookie = get_csrf(not args.nocache)
-print(get_locations_batch(csrf, cookie, samsara_token, org_id))
+
+
+location = get_locations_batch(csrf, cookie, samsara_token, org_id)
+location_json = location.get("data").get("fleetViewerToken")
+
+if location_json is not None:	
+	location_json = location_json.get("devices")[0].get("location")
+
+	logfile_exists = logger_path.exists()
+	if not logfile_exists:
+		logger_path.touch()
+	with open(logger_path, "a", encoding="utf8") as csvfile:
+		fieldnames = location_json[0].keys()
+		writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+		if not logfile_exists:
+			writer.writeheader()
+		for l in location_json:
+			writer.writerow(l)
+
+	print(location_json)
+else:
+	print("no location updates")
